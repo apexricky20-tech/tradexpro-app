@@ -1,0 +1,35 @@
+.migration-modal {
+    &__content {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.6rem;
+        text-align: left;
+
+        @include desktop-screen {
+            padding: 2.4rem;
+        }
+    }
+
+    &__title {
+        margin-bottom: 0.4rem;
+    }
+
+    &__description {
+        margin-bottom: 0.8rem;
+    }
+
+    &__cta {
+        margin-top: 1.2rem;
+    }
+
+    &__support {
+        margin-top: 0.8rem;
+        width: 100%;
+        text-align: center;
+    }
+
+    &__support-link {
+        color: var(--brand-red-coral) !important;
+    }
+}
