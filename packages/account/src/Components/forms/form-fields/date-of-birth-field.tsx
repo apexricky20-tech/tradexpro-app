@@ -28,9 +28,12 @@ const DateOfBirthField = ({ name, portal_id, ...rest }: TDateOfBirthFieldProps) 
                 error={touched ? error : undefined}
                 name={name}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onChange={({ target }: any) =>
-                    setFieldValue(name, target?.value ? toMoment(target.value).format('YYYY-MM-DD') : '', true)
-                }
+                onChange={({ target }: any) => {
+                    const val = target?.value;
+                    const formatted =
+                        val !== undefined && val !== null && val !== '' ? toMoment(val).format('YYYY-MM-DD') : '';
+                    setFieldValue(name, formatted, true);
+                }}
                 portal_id={portal_id}
             />
         )}

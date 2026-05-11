@@ -45,9 +45,10 @@ export const personal_details_config = ({
         },
         date_of_birth: {
             supported_in: ['svg', 'maltainvest'],
-            default_value: account_settings.date_of_birth
-                ? toMoment(account_settings.date_of_birth).format('YYYY-MM-DD')
-                : '',
+            default_value:
+                account_settings.date_of_birth != null && account_settings.date_of_birth !== ''
+                    ? toMoment(account_settings.date_of_birth).format('YYYY-MM-DD')
+                    : '',
         },
         place_of_birth: {
             supported_in: ['maltainvest'],

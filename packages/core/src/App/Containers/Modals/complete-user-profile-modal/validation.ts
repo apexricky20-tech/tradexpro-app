@@ -14,8 +14,12 @@ export const ValidationSchema = (is_svg: boolean, account_settings?: Record<stri
             then: schema => schema.required(),
             otherwise: schema => schema,
         }),
+        // Treat DOB as set when it has any value including 0 (Unix epoch = 1970-01-01)
         date_of_birth: Yup.string().when([], {
-            is: () => !account_settings?.date_of_birth,
+            is: () => {
+                const dob = account_settings?.date_of_birth;
+                return dob === undefined || dob === null || (typeof dob === 'string' && dob === '');
+            },
             then: schema =>
                 schema.required('Date of birth is required.').test({
                     name: 'validate_dob',

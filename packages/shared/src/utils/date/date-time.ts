@@ -29,12 +29,12 @@ export const epochToMoment = (epoch: number) => moment.unix(epoch).utc();
 
 /**
  * Convert date string or epoch to moment object
- * @param  {Number} value   the date in epoch format
+ * @param  {Number} value   the date in epoch format (0 = 1970-01-01, must not be treated as empty)
  * @param  {String} value   the date in string format
  * @return {moment} the moment object of 'now' or the provided date epoch or string
  */
 export const toMoment = (value?: moment.MomentInput): moment.Moment => {
-    if (!value) return moment().utc(); // returns 'now' moment object
+    if (value === undefined || value === null || value === '') return moment().utc(); // returns 'now' moment object
     if (value instanceof moment && (value as moment.Moment).isValid() && (value as moment.Moment).isUTC())
         return value as moment.Moment; // returns if already a moment object
     if (typeof value === 'number') return epochToMoment(value); // returns epochToMoment() if not a date

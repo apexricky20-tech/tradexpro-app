@@ -11,7 +11,6 @@ import MT5AccountNeededModal from 'App/Components/Elements/Modals/mt5-account-ne
 import RedirectNoticeModal from 'App/Components/Elements/Modals/RedirectNotice';
 
 import CompleteUserProfileModal from './complete-user-profile-modal/complete-user-profile-modal';
-import TaxInfoModal from './tax-info-modal';
 import CompletedAssessmentModal from './completed-assessment-modal.jsx';
 import CooldownWarningModal from './cooldown-warning-modal.jsx';
 import CryptoTransactionProcessingModal from './crypto-transaction-processing-modal';
@@ -20,6 +19,7 @@ import NeedRealAccountForCashierModal from './need-real-account-for-cashier-moda
 import ReadyToDepositModal from './ready-to-deposit-modal';
 import ReadyToVerifyModal from './ready-to-verify-modal';
 import RiskAcceptTestWarningModal from './risk-accept-test-warning-modal';
+import TaxInfoModal from './tax-info-modal';
 import WalletsUpgradeCompletedModal from './wallets-upgrade-completed-modal';
 import WalletsUpgradeLogoutModal from './wallets-upgrade-logout-modal';
 
@@ -157,12 +157,18 @@ const AppModals = observer(() => {
 
     const { citizen, date_of_birth, address_line_1, address_city } = account_settings;
 
+    // Treat DOB as set when it has any value including 0 (Unix epoch = 1970-01-01); many systems wrongly treat 0 as "not set"
+    const has_date_of_birth =
+        date_of_birth !== undefined &&
+        date_of_birth !== null &&
+        (typeof date_of_birth !== 'string' || date_of_birth !== '');
+
     const missing_information_account_settings =
         !has_wallet &&
         is_logged_in &&
         is_authorize &&
         has_active_real_account &&
-        (!citizen || !date_of_birth || !address_line_1 || !address_city || no_currency);
+        (!citizen || !has_date_of_birth || !address_line_1 || !address_city || no_currency);
 
     const missing_fa = should_update_fa && is_eu_user && has_active_real_account;
 

@@ -18,6 +18,7 @@ import { useResidenceList, useStatesList } from '@deriv/hooks';
 import {
     capitalizeFirstLetter,
     CURRENCY_TYPE,
+    epochToMoment,
     filterObjProperties,
     formatDate,
     reorderCurrencies,
@@ -133,10 +134,14 @@ const CompleteAccountSettings = observer(
             address_postcode,
         } = account_settings || {};
 
+        // Treat DOB as set when it has any value including 0 (Unix epoch = 1970-01-01); use epochToMoment so 0 formats correctly
+        const date_of_birth_display =
+            typeof date_of_birth === 'number' ? epochToMoment(date_of_birth).format('YYYY-MM-DD') : date_of_birth || '';
+
         const initial_values: TCompleteUserProfileFormProps = {
             currency: '',
             citizen: citizen || '',
-            date_of_birth: date_of_birth || '',
+            date_of_birth: date_of_birth_display as unknown as GetSettings['date_of_birth'],
             place_of_birth: place_of_birth || '',
             address_line_1: address_line_1 || '',
             address_line_2: address_line_2 || '',
@@ -145,6 +150,10 @@ const CompleteAccountSettings = observer(
             address_postcode: address_postcode || '',
         };
 
+        const has_date_of_birth =
+            date_of_birth !== undefined &&
+            date_of_birth !== null &&
+            (typeof date_of_birth !== 'string' || date_of_birth !== '');
         const showAddressDetailsFields = !address_line_1 || !address_city;
 
         const available_crypto_codes = new Set(available_crypto_currencies.map(c => c.value));
@@ -298,7 +307,7 @@ const CompleteAccountSettings = observer(
                                             )}
                                         </>
                                     )}
-                                    {!date_of_birth && (
+                                    {!has_date_of_birth && (
                                         <>
                                             <Text
                                                 weight='bold'
