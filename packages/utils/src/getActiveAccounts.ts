@@ -1,6 +1,7 @@
+import { runInAction } from 'mobx'; // <--- Add this import
 import Cookies from 'js-cookie';
-
 import { requestSessionActive } from '@deriv-com/auth-client';
+// ... rest of your existing imports
 
 import Chat from './chat';
 import isTmbEnabled from './isTmbEnabled';
@@ -238,10 +239,25 @@ export async function initApp() {
         // eslint-disable-next-line no-console
         console.error("Session initialization failed, falling back to logged-out state:", error);
     } finally {
-        // By using a 'finally' block, this statement is guaranteed to execute 
-        // whether getActiveAccounts resolves, returns early, or throws a CORS/network error.
+        // Safe context checking for runtime environments
         if (typeof ClientStore !== 'undefined' && ClientStore) {
-            ClientStore.setIsClientStoreInitialized(true);
+            try {
+                // Wrap the state mutation inside a MobX action to bypass strict mode errors
+                runInAction(() => {
+                    ClientStore.setIsClientStoreInitialized(true);
+                });
+            } catch (mobxError) {
+                // Ultimate fallback: if setIsClientStoreInitialized itself fails due to strict rules, 
+                // we try updating the state property directly within the action wrapper
+                try {
+                    runInAction(() => {
+                        (ClientStore as any).is_client_store_initialized = true;
+                    });
+                } catch (fallbackError) {
+                    // eslint-disable-next-line no-console
+                    console.error("Failed to unblock MobX store initialization flag:", fallbackError);
+                }
+            }
         }
     }
 }
