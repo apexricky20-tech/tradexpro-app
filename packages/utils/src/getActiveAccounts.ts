@@ -5,6 +5,9 @@ import { requestSessionActive } from '@deriv-com/auth-client';
 import Chat from './chat';
 import isTmbEnabled from './isTmbEnabled';
 
+// ClientStore is provided globally in some runtimes — declare to avoid TS errors
+declare const ClientStore: { setIsClientStoreInitialized: (v: boolean) => void } | undefined;
+
 type TMBApiReturnedValue = {
     tokens?: {
         loginid: string;
@@ -221,3 +224,12 @@ const getActiveAccounts = async () => {
 };
 
 export default getActiveAccounts;
+async function initApp() {
+    try {
+        await getActiveAccounts();
+    } catch (error) {
+        console.error("Session initialization failed, falling back to logged-out state:", error);
+        // Explicitly set your state or loader to false here so the UI still renders
+        ClientStore?.setIsClientStoreInitialized(true);
+    }
+}

@@ -5,7 +5,8 @@
         "paths": {
             "@deriv/*": ["../*/src"]
         },
-        "typeRoots": ["node_modules/@types"]
+        "typeRoots": ["node_modules/@types"],
+        "ignoreDeprecations": "6.0"
     },
     "include": ["src", "../../utils.d.ts"]
 }
