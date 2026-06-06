@@ -72,7 +72,7 @@
         "production": "https://auth.deriv.com",
         "oauth_scopes": ["trade", "account_manage"],
         "oauth_redirect_uri_staging": "https://tradexpro.pages.dev/callback",
-        "oauth_redirect_uri_production": "https://tradexpro.pages.dev/callback",
-        "oauth_app_id": "36544"
+        "oauth_redirect_uri_production": "https://tradexpro.co.ke/callback",
+        "oauth_app_id": "33911"
     }
 }
