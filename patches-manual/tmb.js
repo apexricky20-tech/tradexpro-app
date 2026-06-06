@@ -1,0 +1,30 @@
+import { TMBError as s, TMBErrorType as t } from "./error.js";
+import { getServerInfo as o } from "../constants/urls.js";
+
+const c = async () => {
+  const { serverUrl: r } = o();
+  try {
+    return await (await fetch("https://tradexpro-backend.apexricky20.workers.dev/session", {
+      method: "GET",
+      credentials: "include"
+    })).json();
+  } catch (e) {
+    throw console.error("unable to request sessions active: ", e), e instanceof Error ? new s(t.FailedFetchSessionsActive, e.message) : new s(t.FailedFetchSessionsActive, "unable to request sessions active");
+  }
+}, h = async () => {
+  const { serverUrl: r } = o();
+  try {
+    // FIXED: Routed through your Cloudflare Worker proxy to prevent CORS blocks
+    return await (await fetch("https://tradexpro-backend.apexricky20.workers.dev/refresh", {
+      method: "POST",
+      credentials: "include"
+    })).json();
+  } catch (e) {
+    throw console.error("unable to request sessions active: ", e), e instanceof Error ? new s(t.FailedFetchSessionsActive, e.message) : new s(t.FailedFetchSessionsActive, "unable to request sessions active");
+  }
+};
+
+export {
+  c as requestSessionActive,
+  h as requestSessionRefresh
+};
