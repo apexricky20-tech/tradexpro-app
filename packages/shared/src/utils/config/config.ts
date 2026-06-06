@@ -14,10 +14,11 @@ export const livechat_license_id = 12049137;
 export const livechat_client_id = '66aa088aad5a414484c1fd1fa8a5ace7';
 
 export const domain_app_ids = {
-    // these domains as supported "production domains"
-    'tradexpro.co.ke': 16929,
-    'www.tradexpro.co.ke': 16929,
-    'deriv.app': 16929, // TODO: [app-link-refactor] - Remove backwards compatibility for `deriv.app`
+    'tradexpro.co.ke': 33911,
+    'www.tradexpro.co.ke': 33911,
+    'tradexpro.pages.dev': 33911, // Added for Cloudflare preview deployments
+    'deriv.app': 16929,
+    // ... rest of the file
     'app.deriv.com': 16929,
     'staging-app.deriv.com': 16303,
     'app.deriv.me': 1411,
