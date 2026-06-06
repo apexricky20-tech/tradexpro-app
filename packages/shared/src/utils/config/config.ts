@@ -14,9 +14,9 @@ export const livechat_license_id = 12049137;
 export const livechat_client_id = '66aa088aad5a414484c1fd1fa8a5ace7';
 
 export const domain_app_ids = {
-    'tradexpro.co.ke': 33911,
-    'www.tradexpro.co.ke': 33911,
-    'tradexpro.pages.dev': 33911, // Added for Cloudflare preview deployments
+    'tradexpro.co.ke': 339,
+    'www.tradexpro.co.ke': 339,
+    'tradexpro.pages.dev': 339, // Added for Cloudflare preview deployments
     'deriv.app': 16929,
     // ... rest of the file
     'app.deriv.com': 16929,
