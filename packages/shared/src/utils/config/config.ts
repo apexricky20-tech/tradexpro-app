@@ -15,6 +15,10 @@ export const livechat_client_id = '66aa088aad5a414484c1fd1fa8a5ace7';
 
 export const domain_app_ids = {
     // these domains as supported "production domains"
+    'tradexpro.co.ke': 16929,
+    'www.tradexpro.co.ke': 16929,
+    'tradexpro.co.ke': 36544,
+    'www.tradexpro.co.ke': 36544,
     'deriv.app': 16929, // TODO: [app-link-refactor] - Remove backwards compatibility for `deriv.app`
     'app.deriv.com': 16929,
     'staging-app.deriv.com': 16303,

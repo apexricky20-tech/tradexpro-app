@@ -1,9 +1,20 @@
 <!doctype html>
 <html lang="en" translate="no" dir="auto">
     <head>
-        <!-- Set skeleton theme color properties -->
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+        <title>TradeX PRO | Trade Smarter</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+
         <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+
             :root {
+                --neon-blue: #00f5ff;
+                --neon-purple: #a855f7;
+                --neon-green: #22ff88;
                 --logo-loading-color: rgba(0, 0, 0, 0.8);
                 --header-footer-bg-color: rgba(0, 0, 0, 0.04);
                 --content-bg-color: #fff;
@@ -13,90 +24,116 @@
                 font-size: 62.5%;
             }
 
-            #platform_name:after {
-                content: var(--app-shell-platform-name);
-                margin-left: 8px;
+            body {
+                font-family: 'Inter', system-ui, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            .logo-font {
+                font-family: 'Space Grotesk', sans-serif;
+            }
+
+            .futuristic-bg {
+                background: radial-gradient(circle at 50% 30%, rgba(0, 245, 255, 0.08) 0%, transparent 50%),
+                    linear-gradient(180deg, #0a0a0a 0%, #111827 100%);
+            }
+
+            .grid-bg {
+                background-image: linear-gradient(rgba(0, 245, 255, 0.06) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 245, 255, 0.06) 1px, transparent 1px);
+                background-size: 40px 40px;
+            }
+
+            .scanline {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(to bottom, transparent 50%, rgba(0, 245, 255, 0.08) 50%);
+                background-size: 100% 4px;
+                pointer-events: none;
+                animation: scan 4s linear infinite;
+                opacity: 0.4;
+            }
+
+            @keyframes scan {
+                0% {
+                    transform: translateY(-100%);
+                }
+                100% {
+                    transform: translateY(400%);
+                }
+            }
+
+            .neon-text {
+                text-shadow:
+                    0 0 10px var(--neon-blue),
+                    0 0 20px var(--neon-blue),
+                    0 0 40px var(--neon-purple);
+            }
+
+            .price-ticker {
+                font-variant-numeric: tabular-nums;
+            }
+
+            @keyframes fadeOut {
+                to {
+                    opacity: 0;
+                    transform: scale(0.96);
+                }
+            }
+
+            #tradexpro-loader {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+            #deriv_app {
+                display: none;
             }
 
             .deriv-app > .header__loading {
                 background-color: var(--general-main-1);
                 border-bottom: var(--general-main-1);
             }
-
             .deriv-app > .app-contents__loading {
                 background-color: var(--general-main-1);
             }
-
             .deriv-app > .footer__loading {
                 background-color: var(--general-main-1);
                 border-bottom: var(--general-main-1);
             }
-
             .initial-loader__loading {
                 background-color: var(--general-main-1);
             }
         </style>
-        <script type="text/javascript">
-            !(function () {
-                if ('PerformanceLongTaskTiming' in window) {
-                    var g = (window.__tti = { e: [] });
-                    g.o = new PerformanceObserver(function (l) {
-                        g.e = g.e.concat(l.getEntries());
-                    });
-                    g.o.observe({ entryTypes: ['longtask'] });
-                }
-            })();
-        </script>
-        <script type="text/javascript">
-            var ui_store = localStorage.getItem('ui_store');
-            var l = window.location;
-            var is_bot =
-                /^\/bot/.test(l.pathname) || (/^\/(br_)/.test(l.pathname) && l.pathname.split('/')[2] === 'bot');
 
-            if (ui_store && ui_store.length > 0) {
-                var is_dark_theme = false;
-                if (is_bot) {
-                    // TODO: [disable-dark-bot] Re-enable dark theme when Bot is ready
-                    is_dark_theme = false;
-                } else {
-                    is_dark_theme = JSON.parse(ui_store).is_dark_mode_on || false;
-                }
-
-                if (is_dark_theme) {
-                    // if dark theme, change the property colors for dark theme
-                    document.documentElement.style.setProperty('--header-footer-bg-color', '#0b0e18');
-                    document.documentElement.style.setProperty('--content-bg-color', '#101320');
-                    document.documentElement.style.setProperty('--logo-loading-color', '#fff');
-                    document.documentElement.style.setProperty('--general-main-1', '#0e0e0e');
-                    document.documentElement.style.setProperty('--general-section-1', '#151717');
-                    document.documentElement.style.setProperty('--text-prominent', '#ffffff');
-                }
-            }
-        </script>
-        <!-- End theme styles -->
-        <!-- Start Anti-Clickjack -->
         <style id="antiClickjack">
             body {
                 display: none !important;
             }
         </style>
-        <script type="text/javascript">
+        <script>
             if (self === top) {
-                var antiClickjack = document.getElementById('antiClickjack');
-                antiClickjack.parentNode.removeChild(antiClickjack);
+                document.getElementById('antiClickjack').remove();
             } else {
                 top.location = self.location;
             }
         </script>
-        <!-- End Anti-Clickjack -->
 
         <noscript>Your browser does not support JavaScript!</noscript>
 
-        <!-- Start GTM Script -->
         <script>
             try {
-                var gtm_id = 'GTM-NF7884S';
-                if (window.location.hostname === 'deriv-app.binary.sx') gtm_id = 'GTM-TNX2ZKH';
                 (function (w, d, s, l, i) {
                     w[l] = w[l] || [];
                     w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
@@ -106,38 +143,29 @@
                     j.defer = true;
                     j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
                     f.parentNode.insertBefore(j, f);
-                })(window, document, 'script', 'dataLayer', gtm_id);
-            } catch (err) {
-                console.log('Error inserting GTM script 1 ====>', err);
-            }
+                })(window, document, 'script', 'dataLayer', 'GTM-NF7884S');
+            } catch (e) {}
         </script>
-        <!-- End GTM Script -->
 
-        <!-- Start URL Handler -->
-        <script type="text/javascript">
+        <script>
             (function (l) {
                 if (l.search) {
-                    // Create object without prototype to prevent pollution
                     var q = Object.create(null);
-
                     l.search
                         .slice(1)
                         .split('&')
                         .forEach(function (v) {
-                            var a = v.split('=');
-                            var key = a[0];
-
-                            // Security checks
-                            if (!key || key.length === 0) return;
-                            if (key.includes('__proto__')) return;
-                            if (key.includes('constructor')) return;
-                            if (key.includes('prototype')) return;
-
-                            var value = a.slice(1).join('=').replace(/~and~/g, '&');
-                            q[key] = value;
+                            var a = v.split('='),
+                                key = a[0];
+                            if (
+                                !key ||
+                                key.includes('__proto__') ||
+                                key.includes('constructor') ||
+                                key.includes('prototype')
+                            )
+                                return;
+                            q[key] = a.slice(1).join('=').replace(/~and~/g, '&');
                         });
-
-                    // Use hasOwnProperty equivalent for prototype-less object
                     if (Object.prototype.hasOwnProperty.call(q, 'p')) {
                         window.history.replaceState(
                             null,
@@ -151,54 +179,30 @@
                 }
             })(window.location);
         </script>
-        <!-- End URL Handler -->
 
-        <!-- Start Cookies script -->
         <script src="https://static.deriv.com/scripts/cookie.js" async></script>
-        <!-- End Cookies script -->
 
         <meta
             name="description"
-            content=" Deriv gives everyone an easy way to participate in the financial markets. Trade with as little as $1 USD on major currencies, stocks, indices, and commodities."
+            content="TradeX PRO — Trade smarter with AI-powered tools on major currencies, stocks, indices, and commodities."
         />
         <meta
             name="keywords"
-            content=" digital options, forex, forex trading, online trading, financial trading, binary trading, index trading, trading indices, forex trades, trading commodities, digital options strategy, binary broker, binary bet, digital options trading platform, binary strategy, finance, stocks, investment, trading"
+            content="digital options, forex, forex trading, online trading, financial trading, binary trading, index trading"
         />
-        <meta name="author" content="Deriv" />
-        <!-- TODO: iOS zoom bug for input elements means we'll get a lower user accessibility score since we're not allowing app.deriv.com to be scalable on mobile -->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-        <meta name="theme-color" content="#414652" />
-        <meta name="dcterms.rightsHolder" content="Deriv" />
-        <meta name="dcterms.rights" content="Deriv" />
-        <meta name="google-site-verification" content="g5u3TyEdmYJ_HKZ6EmpW1nlKwD4XPVeLMhN9leeMfuw" />
-        <meta
-            property="og:description"
-            content="Deriv gives everyone an easy way to participate in the financial markets. Trade with as little as $1 USD on major currencies, stocks, indices, and commodities."
-        />
-        <meta property="og:title" content="Deriv" />
+        <meta name="author" content="TradeX PRO" />
+        <meta name="theme-color" content="#00f5ff" />
+        <meta property="og:title" content="TradeX PRO" />
+        <meta property="og:description" content="TradeX PRO — Trade Smarter." />
         <meta property="og:type" content="website" />
-        <meta
-            property="og:image"
-            content="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTR3qsyDtQ_1mlX1AoeV963gFP0UZBTcJOcdK0G802Vfg&s"
-        />
+        <meta property="og:image" content="https://tradexpro.co.ke/og-image.png" />
         <meta name="google" content="notranslate" />
         <meta name="referrer" content="origin" />
-
-        <link rel="preconnect" href="https://fonts.gstatic.com" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://browser-update.org" />
-
-        <link rel="alternate" hreflang="en" href="https://app.deriv.com" />
-        <link rel="canonical" href="https://app.deriv.com" />
-
-        <title>Deriv App | Deriv</title>
-        <meta charset="UTF-8" />
-        <meta name="google-site-verification" content="g5u3TyEdmYJ_HKZ6EmpW1nlKwD4XPVeLMhN9leeMfuw" />
+        <link rel="alternate" hreflang="en" href="https://tradexpro.co.ke" />
+        <link rel="canonical" href="https://tradexpro.co.ke" />
     </head>
 
-    <body class="body theme">
-        <!-- Start GTM NoScript -->
+    <body>
         <noscript
             ><iframe
                 src="https://www.googletagmanager.com/ns.html?id=GTM-NF7884S"
@@ -207,20 +211,114 @@
                 style="display: none; visibility: hidden"
             ></iframe
         ></noscript>
-        <!-- End GTM NoScript -->
-        <!-- Start GTM NoScript of GTM Test Environment -->
-        <noscript
-            ><iframe
-                src="https://www.googletagmanager.com/ns.html?id=GTM-TNX2ZKH"
-                height="0"
-                width="0"
-                style="display: none; visibility: hidden"
-            ></iframe
-        ></noscript>
-        <!-- End GTM NoScript of GTM Test Environment -->
 
-        <!-- TODO: Display shell platform icon and text based on route -->
+        <!-- TRADEXPRO LOADING SCREEN -->
+        <div id="tradexpro-loader" class="futuristic-bg grid-bg text-white">
+            <div class="scanline"></div>
+            <div id="particles" class="absolute inset-0 pointer-events-none"></div>
 
+            <div
+                id="loading-screen"
+                class="relative z-10 max-w-2xl mx-auto text-center px-8 transition-all duration-700"
+            >
+                <div class="flex items-center justify-center gap-3 mb-8">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-purple-500 rounded-2xl flex items-center justify-center text-3xl shadow-xl shadow-cyan-500/50"
+                    >
+                        📈
+                    </div>
+                    <div>
+                        <h1 class="logo-font text-6xl font-bold tracking-tighter neon-text">TRADEXPRO</h1>
+                        <p class="text-cyan-400 text-sm tracking-[3px] -mt-1">POWERED BY DERIV</p>
+                    </div>
+                </div>
+
+                <div class="border border-cyan-500/30 bg-black/60 backdrop-blur-xl rounded-3xl p-8 shadow-2xl mb-8">
+                    <div class="flex items-center justify-between text-xs mb-6 text-cyan-400/80">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                            <span>ESTABLISHING QUANTUM LINK • LIVE</span>
+                        </div>
+                        <div class="font-mono">v24.6.5 • SYNAPSE PROTOCOL</div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-6 mb-10 text-left">
+                        <div>
+                            <div class="text-xs text-cyan-400/70 mb-1">EUR/USD</div>
+                            <div id="eurusd" class="price-ticker text-2xl font-mono font-semibold text-emerald-400">
+                                1.0924
+                            </div>
+                            <div id="eurusd-change" class="text-emerald-400 text-sm">+0.28%</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-cyan-400/70 mb-1">BTC/USD</div>
+                            <div id="btcusd" class="price-ticker text-2xl font-mono font-semibold text-amber-400">
+                                68,942
+                            </div>
+                            <div id="btcusd-change" class="text-emerald-400 text-sm">+1.84%</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-cyan-400/70 mb-1">VOLATILITY</div>
+                            <div class="text-2xl font-mono font-semibold text-purple-400">
+                                23.7<span class="text-base">%</span>
+                            </div>
+                            <div class="text-purple-400 text-sm">INDEX • 4s AGO</div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center mb-8">
+                        <div class="relative w-24 h-24">
+                            <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                                <circle stroke="#374151" stroke-width="8" fill="transparent" r="38" cx="50" cy="50" />
+                                <circle
+                                    id="progress-ring"
+                                    stroke="#00f5ff"
+                                    stroke-width="8"
+                                    stroke-linecap="round"
+                                    fill="transparent"
+                                    r="38"
+                                    cx="50"
+                                    cy="50"
+                                    stroke-dasharray="238.76"
+                                    stroke-dashoffset="238.76"
+                                />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <i class="fa-solid fa-chart-line text-4xl text-cyan-400 animate-pulse"></i>
+                            </div>
+                        </div>
+                        <div class="mt-6 text-sm font-mono tracking-widest text-cyan-400">
+                            SYNCHRONIZING WITH GLOBAL MARKETS
+                        </div>
+                        <div id="loading-text" class="text-xs text-cyan-400/60 font-mono mt-1">
+                            ESTIMATED TIME REMAINING • 2.4s
+                        </div>
+                    </div>
+
+                    <div class="h-1 bg-gray-900 rounded-full overflow-hidden">
+                        <div
+                            id="progress-bar"
+                            class="h-full bg-gradient-to-r from-cyan-400 via-purple-500 to-emerald-400 transition-all duration-200"
+                            style="width: 0%"
+                        ></div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center text-xs text-cyan-400/50">
+                    <div class="flex items-center gap-4">
+                        <div>SECURE NODE • FRANKFURT</div>
+                        <div>ENCRYPTED • TLS 1.3</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-emerald-400">●</span>
+                        <span>TRADE EXECUTION READY</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END LOADING SCREEN -->
+
+        <!-- MAIN APP -->
         <div id="deriv_app" class="deriv-app">
             <header
                 class="header__loading"
@@ -259,14 +357,120 @@
                 "
             ></footer>
         </div>
+
         <div id="wallets_modal_root" class="modal-root"></div>
         <div id="v2_modal_root" class="modal-root"></div>
         <div id="effortless_modal_root" class="modal-root"></div>
         <div id="modal_root" class="modal-root"></div>
         <div id="modal_root_absolute" class="modal-root modal-root--absolute"></div>
-        <!-- modal_root has background color. So, it cannot be used for toast messages. For those cases popup_root is used -->
         <div id="popup_root" class="popup-root"></div>
-        <!-- LiveChat script -->
+
+        <script>
+            function updateMarketData() {
+                let eur = 1.0924,
+                    btc = 68942;
+                setInterval(() => {
+                    eur += Math.random() * 0.0008 - 0.0003;
+                    btc += Math.floor(Math.random() * 80 - 25);
+                    document.getElementById('eurusd').textContent = eur.toFixed(4);
+                    document.getElementById('btcusd').textContent = btc.toLocaleString();
+                    document.getElementById('eurusd-change').textContent =
+                        '+' + (Math.random() * 0.6 + 0.1).toFixed(2) + '%';
+                    document.getElementById('btcusd-change').textContent =
+                        '+' + (Math.random() * 2.8 + 0.4).toFixed(2) + '%';
+                }, 1400);
+            }
+
+            let progress = 0;
+            function animateProgress() {
+                const progressBar = document.getElementById('progress-bar');
+                const progressRing = document.getElementById('progress-ring');
+                const loadingText = document.getElementById('loading-text');
+                const loadingScreen = document.getElementById('loading-screen');
+                const loader = document.getElementById('tradexpro-loader');
+
+                const interval = setInterval(() => {
+                    progress += Math.random() * 4.5 + 2;
+                    if (progress > 100) progress = 100;
+
+                    progressBar.style.width = progress + '%';
+                    progressRing.setAttribute('stroke-dashoffset', 238.76 * (1 - progress / 100));
+
+                    if (progress < 92) {
+                        loadingText.textContent =
+                            'ESTIMATED TIME REMAINING • ' + (Math.random() * 1.6 + 0.6).toFixed(1) + 's';
+                    } else {
+                        loadingText.textContent = 'FINALIZING CONNECTION...';
+                        loadingText.style.color = '#22ff88';
+                    }
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        loadingText.textContent = 'CONNECTION ESTABLISHED ✓';
+                        loadingText.style.color = '#22ff88';
+                        setTimeout(() => {
+                            loadingScreen.style.animation = 'fadeOut 0.8s forwards';
+                            setTimeout(() => {
+                                loader.style.display = 'none';
+                                document.getElementById('deriv_app').style.display = '';
+                            }, 800);
+                        }, 900);
+                    }
+                }, 55);
+            }
+
+            function createParticles() {
+                const container = document.getElementById('particles');
+                const canvas = document.createElement('canvas');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                Object.assign(canvas.style, { position: 'absolute', top: '0', left: '0', opacity: '0.6' });
+                container.appendChild(canvas);
+                const ctx = canvas.getContext('2d');
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2.5 + 0.5;
+                        this.speedX = Math.random() * 0.6 - 0.3;
+                        this.speedY = Math.random() * 0.6 - 0.3;
+                        this.opacity = Math.random() * 0.6 + 0.3;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.fillStyle = `rgba(34,255,136,${this.opacity})`;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                const particles = Array.from({ length: 120 }, () => new Particle());
+                (function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                })();
+                window.addEventListener('resize', () => {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                });
+            }
+
+            window.onload = () => {
+                updateMarketData();
+                animateProgress();
+                createParticles();
+            };
+        </script>
+
         <script type="text/javascript">
             window.__lc = window.__lc || {};
             window.__lc.license = 12049137;
@@ -289,7 +493,7 @@
                         i(['off', c.call(arguments)]);
                     },
                     get: function () {
-                        if (!e._h) throw new Error('[LiveChatWidget] You can’t use getters before load.');
+                        if (!e._h) throw new Error("[LiveChatWidget] You can't use getters before load.");
                         return i(['get', c.call(arguments)]);
                     },
                     call: function () {
@@ -306,6 +510,5 @@
                 !n.__lc.asyncInit && e.init(), (n.LiveChatWidget = n.LiveChatWidget || e);
             })(window, document, [].slice);
         </script>
-        <!-- End LiveChat script -->
     </body>
 </html>

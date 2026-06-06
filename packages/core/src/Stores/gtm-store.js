@@ -6,8 +6,7 @@ import BinarySocket from '_common/base/socket_base';
 import BaseStore from './base-store';
 
 export default class GTMStore extends BaseStore {
-    is_gtm_applicable =
-        window.location.hostname === 'deriv-app.binary.sx' || /^(16303|16929|19111|19112)$/.test(getAppId());
+    is_gtm_applicable = window.location.hostname === 'tradexpro.co.ke' || /^(36544)$/.test(getAppId());
 
     constructor(root_store) {
         super({ root_store });
@@ -40,12 +39,7 @@ export default class GTMStore extends BaseStore {
             const domain = url.hostname;
             const path = url.pathname;
 
-            // TODO: [app-link-refactor] - Remove backwards compatibility for `deriv.app`
-            if (
-                /^(deriv-app\.binary.sx|app\.deriv\.com|staging-app\.deriv\.com|deriv.app|staging.deriv.app|localhost.binary.sx)$/.test(
-                    domain
-                )
-            ) {
+            if (/^(tradexpro\.co\.ke|localhost)$/.test(domain)) {
                 if (path === 'bot') {
                     return 'DBot';
                 } else if (path === CFD_PLATFORMS.MT5) {
