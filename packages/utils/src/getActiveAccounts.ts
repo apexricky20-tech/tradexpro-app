@@ -1,13 +1,16 @@
-import { runInAction } from 'mobx'; // <--- Add this import
+import { runInAction } from 'mobx';
 import Cookies from 'js-cookie';
 import { requestSessionActive } from '@deriv-com/auth-client';
-// ... rest of your existing imports
 
 import Chat from './chat';
 import isTmbEnabled from './isTmbEnabled';
 
-// ClientStore is provided globally in some runtimes — declare to avoid TS errors
-declare const ClientStore: { setIsClientStoreInitialized: (v: boolean) => void } | undefined;
+// Expanded type declaration to safely intercept tight-validation properties
+declare const ClientStore: { 
+    setIsClientStoreInitialized: (v: boolean) => void;
+    prevent_single_login?: boolean;
+    is_client_store_initialized?: boolean;
+} | undefined;
 
 type TMBApiReturnedValue = {
     tokens?: {
@@ -48,14 +51,12 @@ const handleLogout = async () => {
             expires: 30,
             path: '/',
             secure: true,
-        });
+            });
     }
 };
 
-// Helper function to set account in session storage
 const setAccountInSessionStorage = (loginid?: string, isWallet = false) => {
     if (!loginid) return;
-
     const key = isWallet ? 'active_wallet_loginid' : 'active_loginid';
     sessionStorage.setItem(key, loginid);
 };
@@ -63,7 +64,6 @@ const setAccountInSessionStorage = (loginid?: string, isWallet = false) => {
 const getActiveSessions = async () => {
     try {
         const data = await requestSessionActive();
-
         return data;
     } catch (error) {
         // eslint-disable-next-line no-console
@@ -83,7 +83,14 @@ const getActiveAccounts = async () => {
         const activeSessions = await getActiveSessions();
 
         if (!activeSessions?.active) {
-            handleLogout();
+            // If logging out trips strict modifications, wrap it in a micro action run
+            if (typeof ClientStore !== 'undefined' && ClientStore) {
+                await runInAction(async () => {
+                    await handleLogout();
+                });
+            } else {
+                await handleLogout();
+            }
             return undefined;
         }
 
@@ -98,7 +105,6 @@ const getActiveAccounts = async () => {
 
             localStorage.setItem('clientAccounts', activeSessionTokens);
 
-            // Get account from URL params and set the loginid to session storage
             const params = new URLSearchParams(location.search);
             let account = params.get('account');
             const loginID =
@@ -106,36 +112,23 @@ const getActiveAccounts = async () => {
                 sessionStorage.getItem('active_wallet_loginid') ||
                 sessionStorage.getItem('active_loginid');
 
-            // If no account in params, determine from first available account
             if (!account && !loginID && activeSessions?.tokens?.length > 0) {
                 const firstAccount = activeSessions.tokens[0];
-
-                // Set account based on account type (demo or real)
                 account = firstAccount.loginid.startsWith('VR') ? 'demo' : firstAccount.cur;
-
-                // Update URL params to reflect the selected account
                 params.set('account', account ?? '');
                 const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
                 window.history.replaceState({}, '', newUrl);
             } else if (!account && loginID && activeSessions?.tokens?.length > 0) {
-                // Handle case where loginID is provided in query params
                 const matchingToken = activeSessions.tokens.find(token => token.loginid === loginID);
 
                 if (matchingToken) {
-                    // Set account based on the loginID's currency and type
                     account = matchingToken.loginid.startsWith('VR') ? 'demo' : matchingToken.cur;
-
-                    // Update URL params to reflect the selected account
                     params.set('account', account ?? '');
                     const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
                     window.history.replaceState({}, '', newUrl);
                 } else {
                     const firstAccount = activeSessions.tokens[0];
-
-                    // Set account based on account type (demo or real)
                     account = firstAccount.loginid.startsWith('VR') ? 'demo' : firstAccount.cur;
-
-                    // Update URL params to reflect the selected account
                     params.set('account', account ?? '');
                     const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
                     window.history.replaceState({}, '', newUrl);
@@ -143,12 +136,9 @@ const getActiveAccounts = async () => {
             }
 
             if (account?.toLocaleUpperCase() === 'DEMO') {
-                // Handle account selection based on type (demo or real)
-                // For demo accounts, find virtual accounts with USD currency
                 const demoAccount = activeSessions?.tokens?.find(
                     item => item?.cur?.toLocaleUpperCase() === 'USD' && item.loginid.startsWith('VRTC')
                 );
-
                 const demoWalletAccount = activeSessions?.tokens?.find(
                     item => item?.cur?.toLocaleUpperCase() === 'USD' && item.loginid.startsWith('VRW')
                 );
@@ -169,7 +159,6 @@ const getActiveAccounts = async () => {
                 setAccountInSessionStorage(demoAccount?.loginid);
                 setAccountInSessionStorage(demoWalletAccount?.loginid, true);
             } else {
-                // For real accounts, find accounts matching the selected currency
                 const realAccount = activeSessions?.tokens?.find(
                     item =>
                         item?.cur?.toLocaleUpperCase() === account?.toLocaleUpperCase() &&
@@ -183,7 +172,6 @@ const getActiveAccounts = async () => {
                         (item?.loginid.startsWith('CRW') || item?.loginid.startsWith('MFW'))
                 );
 
-                // Check if stored loginid exists in active sessions before removing
                 const storedLoginid = sessionStorage.getItem('active_loginid') || localStorage.getItem('active_loginid');
                 const storedWalletLoginid =
                     sessionStorage.getItem('active_wallet_loginid') || localStorage.getItem('active_wallet_loginid');
@@ -203,7 +191,6 @@ const getActiveAccounts = async () => {
                     localStorage.removeItem('active_wallet_loginid');
                 }
 
-                // If we have a stored loginid that exists in active sessions, use that instead of realAccount
                 const accountToUse = realAccount ?? activeSessions?.tokens?.find(token => token.loginid === storedLoginid);
                 const walletAccountToUse =
                     realWalletAccount ?? activeSessions?.tokens?.find(token => token.loginid === storedWalletLoginid);
@@ -213,7 +200,6 @@ const getActiveAccounts = async () => {
             }
 
             const convertedResult = {};
-
             activeSessions.tokens.forEach((account: TMBApiReturnedValue['tokens'], index: number) => {
                 const num = index + 1;
                 account?.loginid && ((convertedResult as Record<string, string>)[`acct${num}`] = account.loginid);
@@ -239,23 +225,24 @@ export async function initApp() {
         // eslint-disable-next-line no-console
         console.error("Session initialization failed, falling back to logged-out state:", error);
     } finally {
-        // Safe context checking for runtime environments
         if (typeof ClientStore !== 'undefined' && ClientStore) {
             try {
-                // Wrap the state mutation inside a MobX action to bypass strict mode errors
+                // Safeguard initialization variables by running them inside a dedicated MobX action
                 runInAction(() => {
                     ClientStore.setIsClientStoreInitialized(true);
+                    if ('prevent_single_login' in ClientStore) {
+                        ClientStore.prevent_single_login = true;
+                    }
                 });
             } catch (mobxError) {
-                // Ultimate fallback: if setIsClientStoreInitialized itself fails due to strict rules, 
-                // we try updating the state property directly within the action wrapper
                 try {
                     runInAction(() => {
                         (ClientStore as any).is_client_store_initialized = true;
+                        (ClientStore as any).prevent_single_login = true;
                     });
                 } catch (fallbackError) {
                     // eslint-disable-next-line no-console
-                    console.error("Failed to unblock MobX store initialization flag:", fallbackError);
+                    console.error("Failed to unblock MobX store initialization flags:", fallbackError);
                 }
             }
         }
