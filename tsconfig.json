@@ -21,6 +21,7 @@
         "noUnusedParameters": false, // Report errors on unused parameters
         "incremental": true, // Enable incremental compilation by reading/writing information from prior compilations to a file on disk
         "removeComments": true, // Disable emitting comments
+        "ignoreDeprecations": "6.0",
         "skipDefaultLibCheck": true, // Skip type checking .d.ts files that are included with TypeScript
         "downlevelIteration": true,
         "paths": { "@deriv/*": ["./packages/*/src"] }

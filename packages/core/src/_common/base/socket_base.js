@@ -29,10 +29,23 @@ const BinarySocketBase = (() => {
         is_down: false,
     };
 
-    const getSocketUrl = (language, is_mock_server = false) => {
-        if (is_mock_server) {
-            return 'ws://127.0.0.1:42069';
+    const getSocketUrl = async (language, is_mock_server = false) => {
+        if (is_mock_server) return 'ws://127.0.0.1:42069';
+
+        try {
+            // Fetch the authorized OTP URL from your backend worker
+            const response = await fetch('https://tradexpro-backend.apexricky20.workers.dev/otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ account_id: '33911' }) 
+            });
+            const data = await response.json();
+            if (data.url) return data.url;
+        } catch (e) {
+            console.error("Failed to fetch OTP WebSocket URL:", e);
         }
+        
+        // Fallback if worker fails
         return `wss://${getSocketURL()}/websockets/v3?app_id=${getAppId()}&l=${language}&brand=${website_name.toLowerCase()}`;
     };
 
@@ -71,9 +84,10 @@ const BinarySocketBase = (() => {
               };
     };
 
-    const openNewConnection = (language = getLanguage()) => {
+    const openNewConnection = async (language = getLanguage()) => {
         const mock_server_config = getMockServerConfig();
         const session_id = mock_server_config?.session_id || '';
+        const is_mock = mock_server_config?.is_mockserver_enabled;
 
         if (wrong_app_id === getAppId()) return;
 
@@ -81,8 +95,11 @@ const BinarySocketBase = (() => {
 
         if (isClose()) {
             is_disconnect_called = false;
-            binary_socket = new WebSocket(getSocketUrl(language, session_id));
-
+            
+            // Wait for the OTP URL, then initialize WebSocket
+            const socket_url_string = await getSocketUrl(language, is_mock);
+            binary_socket = new WebSocket(socket_url_string);
+            
             deriv_api = new DerivAPIBasic({
                 connection: binary_socket,
                 storage: SocketCache,
@@ -148,8 +165,6 @@ const BinarySocketBase = (() => {
 
     const isSiteDown = status => /^down$/i.test(status);
 
-    // if status is up or updating, consider site available
-    // if status is down, consider site unavailable
     const setAvailability = status => {
         availability.is_up = isSiteUp(status);
         availability.is_updating = isSiteUpdating(status);
@@ -160,7 +175,7 @@ const BinarySocketBase = (() => {
 
     const wait = (...responses) => deriv_api?.expectResponse(...responses.filter(excludeAuthorize));
 
-    const subscribe = (request, cb) => deriv_api.subscribe(request).subscribe(cb, cb); // Delegate error handling to the callback
+    const subscribe = (request, cb) => deriv_api.subscribe(request).subscribe(cb, cb);
 
     const balanceAll = () => deriv_api.send({ balance: 1, account: 'all' });
 
@@ -369,8 +384,6 @@ const BinarySocketBase = (() => {
             limit,
         });
 
-    // subscribe method export for P2P use only
-    // so that subscribe remains private
     const p2pSubscribe = (request, cb) => subscribe(request, cb);
     const accountStatistics = () => deriv_api.send({ account_statistics: 1 });
 
@@ -438,12 +451,8 @@ const BinarySocketBase = (() => {
         hasReadyState,
         isSiteDown,
         isSiteUpdating,
-        clear: () => {
-            // do nothing.
-        },
-        sendBuffered: () => {
-            // do nothing.
-        },
+        clear: () => {},
+        sendBuffered: () => {},
         getSocket: () => binary_socket,
         get: () => deriv_api,
         getAvailability: () => availability,
