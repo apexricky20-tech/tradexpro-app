@@ -77,7 +77,7 @@ const BinarySocketBase = (() => {
 
     const isSiteUp = status => /^up$/i.test(status);
     window.addEventListener('load', () => {
-        BinarySocketBase.openNewConnection();
+        openNewConnection();
     });
     const isSiteUpdating = status => /^updating$/i.test(status);
 
