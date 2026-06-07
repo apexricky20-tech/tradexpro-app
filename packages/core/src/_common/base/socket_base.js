@@ -59,15 +59,6 @@ const BinarySocketBase = (() => {
     const close = () => {
         if (binary_socket) binary_socket.close();
     };
-
-    const closeAndOpenNewConnection = (language = getLanguage(), session_id = '') => {
-        close();
-        is_switching_socket = true;
-        openNewConnection(language, session_id);
-    };
-
-    const hasReadyState = (...states) => binary_socket && states.some(s => binary_socket.readyState === s);
-
     const init = ({ options, client }) => {
         if (typeof options === 'object' && config !== options) {
             config = options;
@@ -136,7 +127,11 @@ const BinarySocketBase = (() => {
             });
         });
     };
-
+    const closeAndOpenNewConnection = (language = getLanguage()) => {
+        close();
+        is_switching_socket = true;
+        openNewConnection(language);
+    };
     const buy = ({ proposal_id, price }) => deriv_api.send({ buy: proposal_id, price });
 
     const sell = (contract_id, bid_price) => deriv_api.send({ sell: contract_id, price: bid_price });
