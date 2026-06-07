@@ -16,7 +16,6 @@ const APIMiddleware = require('./api_middleware');
  * reopen the closed connection and process the buffered requests
  */
 const BinarySocketBase = (() => {
-    // ... (keep your existing internal state variables)
     const getSocketUrl = async (language, is_mock_server = false) => {
         if (is_mock_server) return 'ws://127.0.0.1:42069';
 
@@ -34,18 +33,24 @@ const BinarySocketBase = (() => {
 
         return `wss://${getSocketURL()}/websockets/v3?app_id=${getAppId()}&l=${language}&brand=${website_name.toLowerCase()}`;
     };
+
     let deriv_api, binary_socket, client_store;
 
     let config = {};
     const wrong_app_id = 0;
     const is_disconnect_called = false;
-    const is_connected_before = false;
+    let is_connected_before = false;
     let is_switching_socket = false;
 
     const availability = {
         is_up: true,
         is_updating: false,
         is_down: false,
+    };
+
+    // ✅ CRITICAL FIX #1: hasReadyState was missing - now defined
+    const hasReadyState = (...states) => {
+        return binary_socket && states.includes(binary_socket.readyState);
     };
 
     // Socket readiness helpers
@@ -58,6 +63,7 @@ const BinarySocketBase = (() => {
     const close = () => {
         if (binary_socket) binary_socket.close();
     };
+
     const init = ({ options, client }) => {
         if (typeof options === 'object' && config !== options) {
             config = options;
@@ -76,9 +82,6 @@ const BinarySocketBase = (() => {
     };
 
     const isSiteUp = status => /^up$/i.test(status);
-    window.addEventListener('load', () => {
-        openNewConnection();
-    });
     const isSiteUpdating = status => /^updating$/i.test(status);
 
     const isSiteDown = status => /^down$/i.test(status);
@@ -128,11 +131,58 @@ const BinarySocketBase = (() => {
             });
         });
     };
+
+    // ✅ CRITICAL FIX #2: openNewConnection was missing - now fully implemented
+    const openNewConnection = async (language = getLanguage()) => {
+        try {
+            const { is_mockserver_enabled } = getMockServerConfig();
+            const url = await getSocketUrl(language, is_mockserver_enabled);
+
+            // Close existing connection if any
+            if (binary_socket) {
+                binary_socket.close();
+            }
+
+            // Create new WebSocket connection
+            binary_socket = new WebSocket(url);
+
+            // Handle connection open
+            binary_socket.onopen = () => {
+                is_connected_before = true;
+                if (config.onReconnect) {
+                    config.onReconnect();
+                }
+            };
+
+            // Handle connection close
+            binary_socket.onclose = () => {
+                if (config.onDisconnect) {
+                    config.onDisconnect();
+                }
+            };
+
+            // Handle connection error
+            binary_socket.onerror = error => {
+                console.error('WebSocket error:', error);
+            };
+
+            // Initialize DerivAPI with the new connection
+            deriv_api = new DerivAPIBasic({
+                connection: binary_socket,
+                storage: SocketCache,
+                middleware: new APIMiddleware(config),
+            });
+        } catch (error) {
+            console.error('Failed to open new connection:', error);
+        }
+    };
+
     const closeAndOpenNewConnection = (language = getLanguage()) => {
         close();
         is_switching_socket = true;
         openNewConnection(language);
     };
+
     const buy = ({ proposal_id, price }) => deriv_api.send({ buy: proposal_id, price });
 
     const sell = (contract_id, bid_price) => deriv_api.send({ sell: contract_id, price: bid_price });
@@ -363,6 +413,13 @@ const BinarySocketBase = (() => {
         deriv_api.send({
             wallet_migration: 'reset',
         });
+
+    // ✅ CRITICAL FIX #3: Window listener moved to END of IIFE to ensure openNewConnection exists
+    if (typeof window !== 'undefined') {
+        window.addEventListener('load', () => {
+            openNewConnection();
+        });
+    }
 
     return {
         init,
