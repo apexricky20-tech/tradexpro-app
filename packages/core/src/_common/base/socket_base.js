@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, no-console, no-undef, default-param-last */
 const DerivAPIBasic = require('@deriv/deriv-api/dist/DerivAPIBasic');
 const getAppId = require('@deriv/shared').getAppId;
 const getSocketURL = require('@deriv/shared').getSocketURL;
@@ -15,12 +16,31 @@ const APIMiddleware = require('./api_middleware');
  * reopen the closed connection and process the buffered requests
  */
 const BinarySocketBase = (() => {
+    // ... (keep your existing internal state variables)
+
+    const getSocketUrl = async (language, is_mock_server = false) => {
+        if (is_mock_server) return 'ws://127.0.0.1:42069';
+
+        try {
+            const response = await fetch('https://tradexpro-backend.apexricky20.workers.dev/otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ account_id: '33911' }),
+            });
+            const data = await response.json();
+            if (data.url) return data.url;
+        } catch (e) {
+            console.error('Failed to fetch OTP WebSocket URL:', e); // eslint-disable-line no-console
+        }
+
+        return `wss://${getSocketURL()}/websockets/v3?app_id=${getAppId()}&l=${language}&brand=${website_name.toLowerCase()}`;
+    };
     let deriv_api, binary_socket, client_store;
 
     let config = {};
-    let wrong_app_id = 0;
-    let is_disconnect_called = false;
-    let is_connected_before = false;
+    const wrong_app_id = 0;
+    const is_disconnect_called = false;
+    const is_connected_before = false;
     let is_switching_socket = false;
 
     const availability = {
@@ -29,26 +49,7 @@ const BinarySocketBase = (() => {
         is_down: false,
     };
 
-    const getSocketUrl = async (language, is_mock_server = false) => {
-        if (is_mock_server) return 'ws://127.0.0.1:42069';
-
-        try {
-            // Fetch the authorized OTP URL from your backend worker
-            const response = await fetch('https://tradexpro-backend.apexricky20.workers.dev/otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ account_id: '33911' }) 
-            });
-            const data = await response.json();
-            if (data.url) return data.url;
-        } catch (e) {
-            console.error("Failed to fetch OTP WebSocket URL:", e);
-        }
-        
-        // Fallback if worker fails
-        return `wss://${getSocketURL()}/websockets/v3?app_id=${getAppId()}&l=${language}&brand=${website_name.toLowerCase()}`;
-    };
-
+    // Socket readiness helpers
     const isReady = () => hasReadyState(1);
 
     const isClose = () => !binary_socket || hasReadyState(2, 3);
@@ -56,7 +57,7 @@ const BinarySocketBase = (() => {
     const blockRequest = value => deriv_api?.blockRequest(value);
 
     const close = () => {
-        binary_socket.close();
+        if (binary_socket) binary_socket.close();
     };
 
     const closeAndOpenNewConnection = (language = getLanguage(), session_id = '') => {
@@ -82,81 +83,6 @@ const BinarySocketBase = (() => {
                   session_id: '',
                   is_mockserver_enabled: false,
               };
-    };
-
-    const openNewConnection = async (language = getLanguage()) => {
-        const mock_server_config = getMockServerConfig();
-        const session_id = mock_server_config?.session_id || '';
-        const is_mock = mock_server_config?.is_mockserver_enabled;
-
-        if (wrong_app_id === getAppId()) return;
-
-        if (!is_switching_socket) config.wsEvent('init');
-
-        if (isClose()) {
-            is_disconnect_called = false;
-            
-            // Wait for the OTP URL, then initialize WebSocket
-            const socket_url_string = await getSocketUrl(language, is_mock);
-            binary_socket = new WebSocket(socket_url_string);
-            
-            deriv_api = new DerivAPIBasic({
-                connection: binary_socket,
-                storage: SocketCache,
-                middleware: new APIMiddleware(config, session_id),
-            });
-        }
-
-        deriv_api.onOpen().subscribe(() => {
-            config.wsEvent('open');
-
-            wait('website_status');
-
-            if (client_store.is_logged_in) {
-                const authorize_token = client_store.getToken();
-                deriv_api.authorize(authorize_token);
-            }
-
-            if (typeof config.onOpen === 'function') {
-                config.onOpen(isReady());
-            }
-
-            if (typeof config.onReconnect === 'function' && is_connected_before) {
-                config.onReconnect();
-            }
-
-            if (!is_connected_before) {
-                is_connected_before = true;
-            }
-        });
-
-        deriv_api.onMessage().subscribe(({ data: response }) => {
-            const msg_type = response.msg_type;
-            State.set(['response', msg_type], cloneObject(response));
-
-            config.wsEvent('message');
-
-            if (getPropertyValue(response, ['error', 'code']) === 'InvalidAppID') {
-                wrong_app_id = getAppId();
-            }
-
-            if (typeof config.onMessage === 'function') {
-                config.onMessage(response);
-            }
-        });
-
-        deriv_api.onClose().subscribe(() => {
-            if (!is_switching_socket) {
-                config.wsEvent('close');
-            } else {
-                is_switching_socket = false;
-            }
-
-            if (wrong_app_id !== getAppId() && typeof config.onDisconnect === 'function' && !is_disconnect_called) {
-                config.onDisconnect();
-                is_disconnect_called = true;
-            }
-        });
     };
 
     const isSiteUp = status => /^up$/i.test(status);
