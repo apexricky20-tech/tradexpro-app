@@ -17,7 +17,7 @@ const APIMiddleware = require('./api_middleware');
  */
 const BinarySocketBase = (() => {
     // ... (keep your existing internal state variables)
-console.log("BinarySocketBase initialized with:", { openNewConnection });
+    console.log('BinarySocketBase initialized with:', { openNewConnection });
     const getSocketUrl = async (language, is_mock_server = false) => {
         if (is_mock_server) return 'ws://127.0.0.1:42069';
 
@@ -77,9 +77,9 @@ console.log("BinarySocketBase initialized with:", { openNewConnection });
     };
 
     const isSiteUp = status => /^up$/i.test(status);
-window.addEventListener('load', () => {
-    BinarySocketBase.openNewConnection();
-});
+    window.addEventListener('load', () => {
+        BinarySocketBase.openNewConnection();
+    });
     const isSiteUpdating = status => /^updating$/i.test(status);
 
     const isSiteDown = status => /^down$/i.test(status);
@@ -457,25 +457,14 @@ window.addEventListener('load', () => {
     };
 })();
 
-// ... existing code inside IIFE
-const BinarySocketBase = (() => {
-    // ... all your methods (openNewConnection, etc)
-    return {
-        openNewConnection,
-        init,
-        wait,
-        get,
-        // ... include all necessary methods here
-    };
-})();
-
 // --- Move all Proxy logic here, AFTER the IIFE ---
 
 function delegateToObject(base_obj, extending_obj_getter) {
     return new Proxy(base_obj, {
         get(target, field) {
             if (target[field]) return target[field];
-            const extending_obj = typeof extending_obj_getter === 'function' ? extending_obj_getter() : extending_obj_getter;
+            const extending_obj =
+                typeof extending_obj_getter === 'function' ? extending_obj_getter() : extending_obj_getter;
             if (!extending_obj) return undefined;
             const value = extending_obj[field];
             if (value) {
