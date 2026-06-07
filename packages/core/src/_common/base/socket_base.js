@@ -17,7 +17,6 @@ const APIMiddleware = require('./api_middleware');
  */
 const BinarySocketBase = (() => {
     // ... (keep your existing internal state variables)
-    console.log('BinarySocketBase initialized with:', { openNewConnection });
     const getSocketUrl = async (language, is_mock_server = false) => {
         if (is_mock_server) return 'ws://127.0.0.1:42069';
 
